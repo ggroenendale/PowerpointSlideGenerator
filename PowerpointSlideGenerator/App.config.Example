@@ -12,8 +12,8 @@
     </assemblyBinding>
   </runtime>
 <appSettings>
-  <add key="rapidapikey" value="579c63a026msh3290f707a48dd9ap108138jsn8e6715a1e602"/>
-  <add key="extras" value="and,the,it,if,are" />
+  <add key="rapidapikey" value="YOUR-API-KEY"/>
+  <add key="extras" value="and,the,it,if,are,is,on,to,too," />
   <add key="csvslides" value="slides.csv" />
   <add key="piclimit" value="20"/>
 </appSettings>
