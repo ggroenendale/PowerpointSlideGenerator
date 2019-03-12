@@ -5,7 +5,7 @@ This project anables you to create a PowerPoint with any number of slides and ea
 The project could be improved to allow text formatting for fonts and sizes. The highlighting of the picture thumbnails also needs to be improved so that if a different picture is selected it would reset the border on the previous image. I would also liek to improve the user interface overall however the solution is at least functional at the moment.
 
 
-![alt text](https://github.com/ggroenendale/powerpointslidegenerator/exampleimages/example1.png "User Interface")
+![alt text](https://github.com/ggroenendale/powerpointslidegenerator/exampleimages/example1.PNG "User Interface")
 
-![alt text](https://github.com/ggroenendale/powerpointslidegenerator/exampleimages/example2.png "Finished Powerpoint")
+![alt text](https://github.com/ggroenendale/powerpointslidegenerator/exampleimages/example2.PNG "Finished Powerpoint")
 
