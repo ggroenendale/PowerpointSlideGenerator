@@ -13,7 +13,7 @@
   </runtime>
 <appSettings>
   <add key="rapidapikey" value="YOUR-API-KEY"/>
-  <add key="extras" value="and,the,it,if,are,is,on,to,too," />
+  <add key="extras" value="and,the,it,if,are,so,to,too,is,my,your,in,on,an" />
   <add key="csvslides" value="slides.csv" />
   <add key="piclimit" value="20"/>
 </appSettings>

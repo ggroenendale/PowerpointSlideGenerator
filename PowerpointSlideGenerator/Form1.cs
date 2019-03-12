@@ -29,12 +29,6 @@ namespace PowerpointSlideGenerator
         /// compare any text entries and narrow them down to only keywords.
         /// </summary>
         public string[] extras = ConfigurationManager.AppSettings["extras"].Split(',');
-        
-        /// <summary>
-        /// This field variable contains the apikey for the Google Custom Search API used
-        /// to return images from the internet.
-        /// </summary>
-        public string search_api_key = ConfigurationManager.AppSettings["customapikey"];
 
         /// <summary>
         /// This field variable contains the apikey for the Google Custom Search API used
@@ -320,7 +314,8 @@ namespace PowerpointSlideGenerator
         public string get_search_terms()
         {
             //Get text from search box
-            string search_val = title_input.Text.ToString();
+            string search_val  = title_input.Text.ToString();
+            search_val        += " " + text_input.Text.ToString();
 
             //Search for images using text values
             string[] search_terms = search_val.Split(' ');
