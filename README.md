@@ -6,7 +6,5 @@ The project could be improved to allow text formatting for fonts and sizes. The 
 
 <img alt="User Interface" src="https://github.com/ggroenendale/PowerpointSlideGenerator/tree/master/exampleimages/example1.PNG">
 <img alt="Finished Powerpoint" src="https://github.com/ggroenendale/PowerpointSlideGenerator/tree/master/exampleimages/example2.PNG">
-![alt text](https://github.com/ggroenendale/PowerpointSlideGenerator/tree/master/exampleimages/example1.PNG "User Interface")
 
-![alt text](https://github.com/ggroenendale/PowerpointSlideGenerator/tree/master/exampleimages/example2.PNG "Finished Powerpoint")
 
