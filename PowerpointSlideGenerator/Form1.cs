@@ -9,6 +9,7 @@ using System.IO;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Drawing.Imaging;
+using System.Text;
 
 namespace PowerpointSlideGenerator
 {
@@ -181,16 +182,10 @@ namespace PowerpointSlideGenerator
             {
                 terms_for_search.Clear();
                 title_input.Text = info_list[current_slide][slide_tit];
-                text_input.Text = info_list[current_slide][slide_txt];
+                rich_slide_text_in.Text = info_list[current_slide][slide_txt];
 
                 thumbs_panel.Controls.Clear();
             }
-            //message_label.Text = slide_selector.SelectedIndex.ToString();
-            //foreach (Control control in list_thumbs)
-            //{
-            //    //thumbs_panel.Controls.Remove(control);
-            //    control.Dispose();
-            //}
         }
 
         /// <summary>
@@ -218,7 +213,7 @@ namespace PowerpointSlideGenerator
             string title = string.Empty;
             string text = string.Empty;
 
-            if (title_input.Text == "" && text_input.Text == "")
+            if (title_input.Text == "" && rich_slide_text_in.Text == "")
             {
                 message_label.Text = "Please provide a Slide Title";
                 return;
@@ -228,13 +223,13 @@ namespace PowerpointSlideGenerator
                 title = title_input.Text;
             }
             
-            if (text_input.Text == "")
+            if (rich_slide_text_in.Text == "")
             {
                 message_label.Text = "Don't Forget to include some Slide Text.";
             }
             else
             {
-                text = text_input.Text;
+                text = rich_slide_text_in.Text;
             }
             
             List<List<string>> info_list = new List<List<string>>();
@@ -315,7 +310,36 @@ namespace PowerpointSlideGenerator
         {
             //Get text from search box
             string search_val  = title_input.Text.ToString();
-            search_val        += " " + text_input.Text.ToString();
+            //search_val        += " " + text_input.Text.ToString();
+
+            rich_slide_text_in.SelectAll();
+            string rich_text = rich_slide_text_in.SelectedText;
+            var string_fixed = new StringBuilder();
+            foreach (char c in rich_text)
+            {
+                if (!char.IsPunctuation(c))
+                {
+                    string_fixed.Append(c);
+                }
+            }
+
+            rich_text = string_fixed.ToString();
+            string[] rich_words = rich_text.Split(' ');
+
+            int placeholder = 0;
+            foreach (string word in rich_words)
+            {
+
+                rich_slide_text_in.Select(placeholder, word.Length);
+                if (rich_slide_text_in.SelectionFont.Bold)
+                {
+                    //Is a bold keyword add it to the list
+                    search_val += " " + word;
+                }
+
+                //Make the placeholder variable incrementally bigger by the length of the word and the space.
+                placeholder += word.Length + 1;
+            }
 
             //Search for images using text values
             string[] search_terms = search_val.Split(' ');
@@ -455,7 +479,7 @@ namespace PowerpointSlideGenerator
 
                 //Record image filename in the field variable
                 FileInfo info = new FileInfo(filename);
-                current_slide_img = info.FullName;
+                current_slide_img += "," + info.FullName;
             }
             else
             {
@@ -520,6 +544,9 @@ namespace PowerpointSlideGenerator
             //Then create PowerPoint File
             Microsoft.Office.Interop.PowerPoint.Application ppt = new Microsoft.Office.Interop.PowerPoint.Application();
             Presentation pptpresent = ppt.Presentations.Add(Microsoft.Office.Core.MsoTriState.msoTrue);
+            float slide_height = pptpresent.PageSetup.SlideHeight;
+            float slide_width = pptpresent.PageSetup.SlideWidth;
+
             int num_slides = slide_count;
             for (int i = 0; i < num_slides; i++)
             {
@@ -535,7 +562,6 @@ namespace PowerpointSlideGenerator
                 slides = pptpresent.Slides;
                 slide = slides.AddSlide(i + 1, custLayout);
 
-                //slide.Shapes.AddShape(Microsoft.Office.Core.MsoAutoShapeType.msoShapeRectangle, 10, 10, 100, 10);
                 //slide.Shapes.AddShape(Microsoft.Office.Core.MsoAutoShapeType.msoShapeRectangle, 30, 30, 100, 10);
                 //slide.Shapes.AddShape(Microsoft.Office.Core.MsoAutoShapeType.msoShapeRectangle, 50, 50, 100, 10);
 
@@ -551,12 +577,225 @@ namespace PowerpointSlideGenerator
                 slide_text.Font.Name = "";
                 slide_text.Font.Size = 18;
 
-                string PictureFile = current_info[3];
-                Microsoft.Office.Interop.PowerPoint.Shape shape = slide.Shapes[3];
-                slide.Shapes.AddPicture(PictureFile, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue, shape.Left, shape.Top, shape.Width, shape.Height);
+                //add a bunch of photos
+                float pic_width = 0;    //100;
+                float pic_height = 0;   // 100;
+                float padding = 10;     //
 
+                //Declare a counter to keep track of all of the shapes. Initialized with a 2 to account for the Title and textbox
+                int shape_counter = 2;
+
+                string[] pic_filenames = current_info[3].Split(',');
+
+                if (pic_filenames.Length == 1)
+                {
+                    pic_width = (slide_width / 2) - 10;
+                    pic_height = (slide_height - 200) - 10;
+
+                    float height_placeholder = 0;
+                    float width_placeholder = 0;
+
+                    for (int p = 0; p < pic_filenames.Length; p++)
+                    {
+                        slide.Shapes.AddShape(
+                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeFrame,
+                            (slide_width - pic_width - padding),
+                            (slide_height - pic_height - padding),
+                            pic_width,
+                            pic_height
+                        );
+
+                        shape_counter++;
+                        string PictureFile = pic_filenames[p];
+                        Microsoft.Office.Interop.PowerPoint.Shape shape = slide.Shapes[shape_counter];
+                        slide.Shapes.AddPicture(PictureFile, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue, shape.Left, shape.Top, shape.Width, shape.Height);
+                    }
+                }
+                else if (pic_filenames.Length == 2)
+                {
+                    pic_width = (slide_width / 2) - 10;
+                    pic_height = ((slide_height - 200) / 2) - 10;
+
+                    float height_placeholder = pic_height * 2;
+                    float width_placeholder = pic_width;
+
+                    for (int p = 0; p < pic_filenames.Length; p++)
+                    {
+                        slide.Shapes.AddShape(
+                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeFrame,
+                            (slide_width - width_placeholder - padding),
+                            (slide_height - height_placeholder - padding),
+                            pic_width,
+                            pic_height
+                        );
+
+                        shape_counter++;
+                        string PictureFile = pic_filenames[p];
+                        Microsoft.Office.Interop.PowerPoint.Shape shape = slide.Shapes[shape_counter];
+                        slide.Shapes.AddPicture(PictureFile, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue, shape.Left, shape.Top, shape.Width, shape.Height);
+
+                        height_placeholder -= pic_height;
+                    }
+                }
+                else if (pic_filenames.Length < 5 && pic_filenames.Length > 2)
+                {
+                    pic_width = (slide_width / 4) - 10;
+                    pic_height = (slide_height - 200) / 2;
+
+                    for (int p = 0; p < pic_filenames.Length; p++)
+                    {
+                        float height_placeholder = pic_height * 2;
+                        float width_placeholder = pic_width * 2;
+
+                        if (p == 1)
+                        {
+                            width_placeholder -= pic_width;
+                        }
+                        else if (p == 2)
+                        {
+                            height_placeholder -= pic_height;
+                        }
+                        else if (p == 3)
+                        {
+                            height_placeholder -= pic_height;
+                            width_placeholder -= pic_width;
+                        }
+                        slide.Shapes.AddShape(
+                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeFrame,
+                            (slide_width - width_placeholder - padding),
+                            (slide_height - height_placeholder - padding),
+                            pic_width,
+                            pic_height
+                        );
+
+                        shape_counter++;
+                        string PictureFile = pic_filenames[p];
+                        Microsoft.Office.Interop.PowerPoint.Shape shape = slide.Shapes[shape_counter];
+                        slide.Shapes.AddPicture(PictureFile, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue, shape.Left, shape.Top, shape.Width, shape.Height);
+                    }
+                }
+                else if (pic_filenames.Length < 7 && pic_filenames.Length > 4)
+                {
+                    pic_width = (slide_width / 4) - 10;
+                    pic_height = (slide_height - 200) / 3;
+
+                    for (int p = 0; p < pic_filenames.Length; p++)
+                    {
+                        float height_placeholder = pic_height * 3;
+                        float width_placeholder = pic_width * 2;
+
+                        if (p == 1)
+                        {
+                            width_placeholder -= pic_width;
+                        }
+                        else if (p == 2)
+                        {
+                            height_placeholder -= pic_height;
+                        }
+                        else if (p == 3)
+                        {
+                            height_placeholder -= pic_height;
+                            width_placeholder -= pic_width;
+                        }
+                        else if (p == 4)
+                        {
+                            height_placeholder -= pic_height *2;
+                        }
+                        else if (p == 5)
+                        {
+                            height_placeholder -= pic_height * 2;
+                            width_placeholder -= pic_width;
+                        }
+                        slide.Shapes.AddShape(
+                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeFrame,
+                            (slide_width - width_placeholder - padding),
+                            (slide_height - height_placeholder - padding),
+                            pic_width,
+                            pic_height
+                        );
+
+                        shape_counter++;
+                        string PictureFile = pic_filenames[p];
+                        Microsoft.Office.Interop.PowerPoint.Shape shape = slide.Shapes[shape_counter];
+                        slide.Shapes.AddPicture(PictureFile, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue, shape.Left, shape.Top, shape.Width, shape.Height);
+                    }
+                }
             }
             //pptpresent.SaveAs("newslide.pptx", Microsoft.Office.Interop.PowerPoint.PpSaveAsFileType.ppSaveAsDefault, Microsoft.Office.Core.MsoTriState.msoTrue);
+        }
+
+        /// <summary>
+        /// Handles Bold text in richtextbox functionality
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            if (!this.rich_slide_text_in.SelectionFont.Bold)
+            {
+                this.rich_slide_text_in.SelectionFont = new System.Drawing.Font(this.rich_slide_text_in.SelectionFont, FontStyle.Bold);
+            }
+            else
+            {
+                this.rich_slide_text_in.SelectionFont = new System.Drawing.Font(this.rich_slide_text_in.SelectionFont, FontStyle.Regular);
+            }
+        }
+
+        /// <summary>
+        /// Handles Italic text in richtextbox functionality
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void italic_button_Click(object sender, EventArgs e)
+        {
+            if (!this.rich_slide_text_in.SelectionFont.Italic)
+            {
+                this.rich_slide_text_in.SelectionFont = new System.Drawing.Font(this.rich_slide_text_in.SelectionFont, FontStyle.Italic);
+            }
+            else
+            {
+                this.rich_slide_text_in.SelectionFont = new System.Drawing.Font(this.rich_slide_text_in.SelectionFont, FontStyle.Regular);
+            }
+        }
+
+        /// <summary>
+        /// Handles Underlined text in richtextbox functionality
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void underline_button_Click(object sender, EventArgs e)
+        {
+            if (!this.rich_slide_text_in.SelectionFont.Underline)
+            {
+                this.rich_slide_text_in.SelectionFont = new System.Drawing.Font(this.rich_slide_text_in.SelectionFont, FontStyle.Underline);
+            }
+            else
+            {
+                this.rich_slide_text_in.SelectionFont = new System.Drawing.Font(this.rich_slide_text_in.SelectionFont, FontStyle.Regular);
+            }
+        }
+
+        /// <summary>
+        /// Handles the font size changes in the rich textbox.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void font_size_in_TextChanged(object sender, EventArgs e)
+        {
+            int select_start = rich_slide_text_in.SelectionStart;
+            int select_lencth = rich_slide_text_in.SelectionLength;
+
+            float font_size = float.Parse(font_size_in.Text);
+            if(this.rich_slide_text_in.SelectionFont != null)
+            {
+                this.rich_slide_text_in.SelectionFont = new System.Drawing.Font(this.rich_slide_text_in.SelectionFont.ToString(), font_size);
+            }
+            else
+            {
+                return;
+            }
+
+            rich_slide_text_in.Select(select_start, select_lencth);
         }
     }
 }
