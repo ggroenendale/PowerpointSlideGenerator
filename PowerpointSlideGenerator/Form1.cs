@@ -475,11 +475,26 @@ namespace PowerpointSlideGenerator
 
                 img_encoder_param = new EncoderParameter(img_encoder, 90L);
                 img_encoder_params.Param[0] = img_encoder_param;
-                slide_img.Save(filename, imgcodecinfo, img_encoder_params);
+                try
+                {
+                    slide_img.Save(filename, imgcodecinfo, img_encoder_params);
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine(err.Message);
+                    Console.WriteLine(filename);
+                }
 
                 //Record image filename in the field variable
                 FileInfo info = new FileInfo(filename);
-                current_slide_img += "," + info.FullName;
+                if (current_slide_img == string.Empty)
+                {
+                    current_slide_img += info.FullName;
+                }
+                else
+                {
+                    current_slide_img += "," + info.FullName;
+                }
             }
             else
             {
@@ -551,6 +566,7 @@ namespace PowerpointSlideGenerator
             for (int i = 0; i < num_slides; i++)
             {
                 string[] current_info = info_list[i].ToArray();
+                int number_of_pics = current_info.Length - 3;
                 Microsoft.Office.Interop.PowerPoint.Slides slides;
                 Microsoft.Office.Interop.PowerPoint._Slide slide;
                 Microsoft.Office.Interop.PowerPoint.TextRange slide_title;
@@ -582,10 +598,17 @@ namespace PowerpointSlideGenerator
                 float pic_height = 0;   // 100;
                 float padding = 10;     //
 
-                //Declare a counter to keep track of all of the shapes. Initialized with a 2 to account for the Title and textbox
-                int shape_counter = 2;
+                //Declare a counter to keep track of all of the shapes. Initialized with a 3 to account for the Title and 2 textboxes
+                int shape_counter = 3;
 
-                string[] pic_filenames = current_info[3].Split(',');
+                List<string> picture_filenames = new List<string>();
+
+                for (int en = 3; en < current_info.Length; en++)
+                {
+                    picture_filenames.Add(current_info[en]);
+                }
+
+                string[] pic_filenames = picture_filenames.ToArray();
 
                 if (pic_filenames.Length == 1)
                 {
@@ -597,13 +620,14 @@ namespace PowerpointSlideGenerator
 
                     for (int p = 0; p < pic_filenames.Length; p++)
                     {
-                        slide.Shapes.AddShape(
-                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeFrame,
+                        var rec_shape = slide.Shapes.AddShape(
+                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeRectangle,
                             (slide_width - pic_width - padding),
                             (slide_height - pic_height - padding),
                             pic_width,
                             pic_height
                         );
+                        rec_shape.Fill.BackColor.RGB = System.Drawing.Color.FromArgb(255,255,255).ToArgb();
 
                         shape_counter++;
                         string PictureFile = pic_filenames[p];
@@ -621,13 +645,14 @@ namespace PowerpointSlideGenerator
 
                     for (int p = 0; p < pic_filenames.Length; p++)
                     {
-                        slide.Shapes.AddShape(
-                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeFrame,
-                            (slide_width - width_placeholder - padding),
-                            (slide_height - height_placeholder - padding),
+                        var rec_shape = slide.Shapes.AddShape(
+                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeRectangle,
+                            (slide_width - pic_width - padding),
+                            (slide_height - pic_height - padding),
                             pic_width,
                             pic_height
                         );
+                        rec_shape.Fill.BackColor.RGB = System.Drawing.Color.FromArgb(255, 255, 255).ToArgb();
 
                         shape_counter++;
                         string PictureFile = pic_filenames[p];
@@ -660,13 +685,14 @@ namespace PowerpointSlideGenerator
                             height_placeholder -= pic_height;
                             width_placeholder -= pic_width;
                         }
-                        slide.Shapes.AddShape(
-                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeFrame,
-                            (slide_width - width_placeholder - padding),
-                            (slide_height - height_placeholder - padding),
+                        var rec_shape = slide.Shapes.AddShape(
+                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeRectangle,
+                            (slide_width - pic_width - padding),
+                            (slide_height - pic_height - padding),
                             pic_width,
                             pic_height
                         );
+                        rec_shape.Fill.BackColor.RGB = System.Drawing.Color.FromArgb(255, 255, 255).ToArgb();
 
                         shape_counter++;
                         string PictureFile = pic_filenames[p];
@@ -706,13 +732,14 @@ namespace PowerpointSlideGenerator
                             height_placeholder -= pic_height * 2;
                             width_placeholder -= pic_width;
                         }
-                        slide.Shapes.AddShape(
-                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeFrame,
-                            (slide_width - width_placeholder - padding),
-                            (slide_height - height_placeholder - padding),
+                        var rec_shape = slide.Shapes.AddShape(
+                            Microsoft.Office.Core.MsoAutoShapeType.msoShapeRectangle,
+                            (slide_width - pic_width - padding),
+                            (slide_height - pic_height - padding),
                             pic_width,
                             pic_height
                         );
+                        rec_shape.Fill.BackColor.RGB = System.Drawing.Color.FromArgb(255, 255, 255).ToArgb();
 
                         shape_counter++;
                         string PictureFile = pic_filenames[p];
