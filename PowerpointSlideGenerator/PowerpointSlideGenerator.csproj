@@ -87,7 +87,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <None Include="App.Config" />
+    <None Include="App.Config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="App.config.Example" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
